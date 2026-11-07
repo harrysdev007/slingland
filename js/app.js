@@ -44,7 +44,7 @@ const I = {
 const sm = (svg, px = 16) => svg.replace('<svg', `<svg style="width:${px}px;height:${px}px;vertical-align:-3px;fill:currentColor"`);
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const logoHtml = (cls = '') => `<a class="logo ${cls}" href="#/" aria-label="slingland home"><img class="flapverse-mark" src="assets/brand/sling-avatar.png?v=24" alt="" width="48" height="48"><span class="flapverse-wordmark">sling<span class="sling-word">land</span><small>YOUR MEME PARADISE</small></span></a>`;
+const logoHtml = (cls = '') => `<a class="logo ${cls}" href="#/" aria-label="slingland home"><img class="flapverse-mark" src="assets/brand/slingland-logo-1x1.png?v=26" alt="" width="48" height="48"><span class="flapverse-wordmark">sling<span class="sling-word">land</span><small>YOUR MEME PARADISE</small></span></a>`;
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 const fmtNum = (n) => (n >= 1000 ? (n / 1000).toFixed(n >= 10000 ? 0 : 1) + 'k' : String(n || 0));
@@ -430,7 +430,7 @@ async function renderResults(app, isStale) {
       </div>
       ${appsMenu()}
     </header>
-    ${state.route.name === 'home' ? '<section class="sling-hero"><div class="sling-hero-top"><span>✦ WELCOME TO YOUR HAPPY PLACE</span><span>MEMES. MOOD. MAGIC.</span></div><div class="sling-art"><img src="assets/brand/sling-banner.png?v=24" alt="Seven anime heroines at a colorful seaside resort" fetchpriority="high"></div><div class="sling-intro"><div><span class="sling-eyebrow">THE INTERNET, WITH EXTRA PERSONALITY</span><h1>A little chaos.<br>A lot of <em>good vibes.</em></h1><p>Your next favorite meme lives here. Pick a source, find your mood, and dive in.</p></div><div class="sling-sticker"><span>♡</span>SCROLL.<br>SMILE.<br>REPEAT.<i>100% your vibe</i></div></div><nav class="sling-moods" aria-label="Meme moods"><a href="#/search?q=anime">✧ Anime energy</a><a href="#/search?q=reaction">♡ Reactions</a><a href="#/search?q=funny">✦ Just for laughs</a><a href="#/search?tab=gifs">↗ GIF mode</a></nav></section>' : ''}
+    ${state.route.name === 'home' ? '<section class="sling-hero"><div class="sling-hero-top"><span>✦ WELCOME TO YOUR HAPPY PLACE</span><span>MEMES. MOOD. MAGIC.</span></div><div class="sling-art"><img src="assets/brand/sling-banner.png?v=26" alt="Seven anime heroines at a colorful seaside resort" fetchpriority="high"></div><div class="sling-intro"><div><span class="sling-eyebrow">THE INTERNET, WITH EXTRA PERSONALITY</span><h1>A little chaos.<br>A lot of <em>good vibes.</em></h1><p>Your next favorite meme lives here. Pick a source, find your mood, and dive in.</p></div><div class="sling-sticker"><span>♡</span>SCROLL.<br>SMILE.<br>REPEAT.<i>100% your vibe</i></div></div><nav class="sling-moods" aria-label="Meme moods"><a href="#/search?q=anime">✧ Anime energy</a><a href="#/search?q=reaction">♡ Reactions</a><a href="#/search?q=funny">✦ Just for laughs</a><a href="#/search?tab=gifs">↗ GIF mode</a></nav></section>' : ''}
     <div class="feed-heading"><a class="feed-social" href="https://x.com/slingland_fun" target="_blank" rel="noopener noreferrer">𝕏 @slingland_fun</a><h2>${p.q ? 'Search results' : p.tab === 'library' ? 'Your collection' : 'Boobs & tits memes'}</h2><span>${p.q ? esc(p.q) : 'BOOBS · TITS · BOOBIES · BREASTS'}</span></div>
     <div class="results ${p.id ? 'with-panel' : ''}">
       <main class="results-main" id="results-body"></main>
