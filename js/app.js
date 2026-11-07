@@ -1,4 +1,4 @@
-// Flapverse - Google for memes. Live meme search across public sources, Google look and feel,
+// slingland - Google for memes. Live meme search across public sources, Google look and feel,
 // plus a private "My memes" library in the browser. Vanilla JS SPA with hash routing.
 import {
   loadLibrary, loadSettings, saveSettings, loadHistory, pushHistory, clearHistory, saveMemeFields, resetOverride,
@@ -44,7 +44,7 @@ const I = {
 const sm = (svg, px = 16) => svg.replace('<svg', `<svg style="width:${px}px;height:${px}px;vertical-align:-3px;fill:currentColor"`);
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const logoHtml = (cls = '') => `<a class="logo ${cls}" href="#/" aria-label="Flapverse home"><img class="flapverse-mark" src="icons/flapverse-192.png?v=14" alt="" width="48" height="48"><span class="flapverse-wordmark">FLAPVERSE</span></a>`;
+const logoHtml = (cls = '') => `<a class="logo ${cls}" href="#/" aria-label="slingland home"><img class="flapverse-mark" src="assets/brand/sling-avatar.png?v=24" alt="" width="48" height="48"><span class="flapverse-wordmark">sling<span class="sling-word">land</span><small>YOUR MEME PARADISE</small></span></a>`;
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 const fmtNum = (n) => (n >= 1000 ? (n / 1000).toFixed(n >= 10000 ? 0 : 1) + 'k' : String(n || 0));
@@ -153,11 +153,11 @@ function searchBox({ value = '', autofocus = false, compact = false } = {}) {
   wrap.innerHTML = `
     <div class="searchbox-inner">
       <span class="sb-icon">${I.search}</span>
-      <input type="text" name="q" autocomplete="off" spellcheck="false" aria-label="Search memes" title="Search" value="${esc(value)}" ${autofocus ? 'autofocus' : ''}>
+      <input type="text" name="q" autocomplete="off" spellcheck="false" placeholder="Search boobs & tits memes" aria-label="Search boobs & tits memes" title="Search boobs & tits memes" value="${esc(value)}" ${autofocus ? 'autofocus' : ''}>
       <button type="button" class="sb-btn sb-clear ${value ? '' : 'hidden'}" title="Clear" aria-label="Clear">${I.clear}</button>
       <span class="sb-divider ${value ? '' : 'hidden'}"></span>
       <button type="button" class="sb-btn sb-mic" title="Search by voice" aria-label="Search by voice">${I.mic}</button>
-      <button type="button" class="sb-btn sb-lens" title="Search by image (Flapverse Lens)" aria-label="Search by image">${I.lens}</button>
+      <button type="button" class="sb-btn sb-lens" title="Search by image (slingland Lens)" aria-label="Search by image">${I.lens}</button>
       ${compact ? `<button type="submit" class="sb-btn sb-go" title="Search" aria-label="Search"><span class="sb-icon" style="fill:var(--blue)">${I.search}</span></button>` : ''}
     </div>
     <div class="suggest" role="listbox"></div>`;
@@ -245,12 +245,12 @@ function voiceSearch(input, submit) {
 }
 
 function topRight() {
-  return `<div class="right"><a class="flapverse-social" href="https://x.com/flapverse_fun" rel="noopener noreferrer" aria-label="Flapverse on X">𝕏 <span>@flapverse_fun</span></a>
+  return `<div class="right"><a class="sling-explore" href="https://x.com/slingland_fun" target="_blank" rel="noopener noreferrer" aria-label="slingland on X">𝕏 @slingland_fun</a>
       <a class="link" href="#/search?tab=images" title="Trending memes">Images</a>
       <a class="link" href="#/search?tab=library">My memes</a>
       <button class="icon-btn" data-action="settings" title="Settings" aria-label="Settings">${I.settings}</button>
-      <button class="icon-btn" data-action="apps" title="Flapverse apps" aria-label="Flapverse apps">${I.apps}</button>
-      <button class="avatar" data-action="settings" title="Local library (this browser)">F</button>
+      <button class="icon-btn" data-action="apps" title="slingland apps" aria-label="slingland apps">${I.apps}</button>
+      <button class="avatar" data-action="settings" title="Local library (this browser)">S</button>
     </div>`;
 }
 function appsMenu() {
@@ -324,11 +324,19 @@ async function libraryAdapter(q, p) {
 }
 
 function adaptersFor(q, p, page = 1) {
+  if (!p._topicBatch && p.tab !== "library") {
+    const groups = [0, 1, 2].map(offset => adaptersFor(q, { ...p, _topicBatch: true, _topicOffset: offset }, page));
+    return groups.flatMap((group, index) => group.map(adapter => ({
+      source: `${adapter.source}_topic${index}`,
+      run: context => adapter.run({ ...context, session: { ...context.session, extra: Object.fromEntries(Object.entries(context.session.extra).filter(([key]) => key.endsWith(`_topic${index}`)).map(([key, value]) => [key.replace(`_topic${index}`, ""), value])) } })
+    })));
+  }
+  q = topicQuery(q, page, p._topicOffset || 0);
   const sourceOn = (key) => !p.src.length || p.src.includes(key) || (key === 'lemmy_global' && p.src.includes('lemmy'));
   if (p.tab === 'library') return page === 1 ? [{source:'library',run:()=>libraryAdapter(q,p)}] : [];
   const s = state.settings;
   const list = [];
-  if (!q && page === 1 && p.tab !== 'library' && sourceOn('library')) list.push({source:'classics',run:async()=>({items:state.lib.slice(0,12).map(m=>({...libItem(m),source:'classics',site:'Flapverse classics'}))})});
+  if (!q && page === 1 && p.tab !== 'library' && sourceOn('library')) list.push({source:'classics',run:async()=>({items:state.lib.slice(0,12).map(m=>({...libItem(m),source:'classics',site:'slingland classics'}))})});
   if (!q) {
     if (enabled('lemmy') && sourceOn('lemmy')) list.push({ source: 'lemmy', run: async () => ({ items: await trendingLemmy({ communities: communities().slice(0, Math.min(communities().length, 12 + 6 * (page - 1))), limit: 25 * page }) }) });
     if (enabled('bluesky') && sourceOn('bluesky')) list.push({ source: 'bluesky', run: async () => ({ items: await trendingBluesky({ limit: 50 * page }) }) });
@@ -338,30 +346,38 @@ function adaptersFor(q, p, page = 1) {
     if (enabled('library') && sourceOn('library')) list.push({ source: 'library', run: () => libraryAdapter('', p) });
     return list;
   }
-  if (enabled('lemmy') && sourceOn('lemmy')) list.push({ source: 'lemmy', run: ({ onPartial }) => searchLemmy(q, { communities: communities(), sort: p.sort, page, onPartial }) });
-  if (enabled('lemmy') && sourceOn('lemmy_global')) list.push({ source: 'lemmy_global', run: ({ onPartial }) => searchLemmyGlobal(q, { sort: p.sort, page, onPartial }) });
+  if (enabled('lemmy') && sourceOn('lemmy')) list.push({ source: 'lemmy', run: ({ onPartial }) => searchLemmy(topicQuery(p.q, page, 0 + (p._topicOffset || 0)), { communities: communities(), sort: p.sort, page, onPartial }) });
+  if (enabled('lemmy') && sourceOn('lemmy_global')) list.push({ source: 'lemmy_global', run: ({ onPartial }) => searchLemmyGlobal(topicQuery(p.q, page, 1 + (p._topicOffset || 0)), { sort: p.sort, page, onPartial }) });
   if (enabled('bluesky') && sourceOn('bluesky') && (page === 1 || s.sources.bluesky)) list.push({ source: 'bluesky', run: ({ onPartial, session }) => {
     const cursor = page > 1 ? session.extra.bluesky?.next || '' : '';
     if (page > 1 && !cursor) return { skipped: true };
-    return searchBluesky(q, { sort: p.sort, cursor, onPartial });
+    return searchBluesky(topicQuery(p.q, page, 2 + (p._topicOffset || 0)), { sort: p.sort, cursor, onPartial });
   } });
   if (page === 1) {
-    if (enabled('mastodon') && sourceOn('mastodon')) list.push({ source: 'mastodon', run: () => searchMastodon(q) });
-    if (enabled('reddit') && sourceOn('reddit')) list.push({ source: 'reddit', run: () => searchReddit(q, { subs: subs() }) });
+    if (enabled('mastodon') && sourceOn('mastodon')) list.push({ source: 'mastodon', run: () => searchMastodon(topicQuery(p.q, page, 3 + (p._topicOffset || 0))) });
+    if (enabled('reddit') && sourceOn('reddit')) list.push({ source: 'reddit', run: () => searchReddit(topicQuery(p.q, page, 4 + (p._topicOffset || 0)), { subs: subs() }) });
     if (enabled('imgflip') && sourceOn('imgflip')) list.push({ source: 'imgflip', run: () => searchImgflip(q) });
     if (enabled('library') && sourceOn('library')) list.push({ source: 'library', run: () => libraryAdapter(q, p) });
   }
-  if (enabled('tenor') && sourceOn('tenor')) list.push({ source: 'tenor', run: ({ session }) => searchTenor(q, { key: s.tenorKey, safe: p.safe, pos: page > 1 ? session.extra.tenor?.next || '' : '' }) });
-  if (enabled('giphy') && sourceOn('giphy')) list.push({ source: 'giphy', run: ({ session }) => searchGiphy(q, { key: s.giphyKey, safe: p.safe, offset: page > 1 ? session.extra.giphy?.next || 0 : 0 }) });
-  if (enabled('imgur') && sourceOn('imgur')) list.push({ source: 'imgur', run: () => searchImgur(q, { clientId: s.imgurClientId, safe: p.safe, page }) });
+  if (enabled('tenor') && sourceOn('tenor')) list.push({ source: 'tenor', run: ({ session }) => searchTenor(topicQuery(p.q, page, 6 + (p._topicOffset || 0)), { key: s.tenorKey, safe: p.safe, pos: page > 1 ? session.extra.tenor?.next || '' : '' }) });
+  if (enabled('giphy') && sourceOn('giphy')) list.push({ source: 'giphy', run: ({ session }) => searchGiphy(topicQuery(p.q, page, 7 + (p._topicOffset || 0)), { key: s.giphyKey, safe: p.safe, offset: page > 1 ? session.extra.giphy?.next || 0 : 0 }) });
+  if (enabled('imgur') && sourceOn('imgur')) list.push({ source: 'imgur', run: () => searchImgur(topicQuery(p.q, page, 8 + (p._topicOffset || 0)), { clientId: s.imgurClientId, safe: p.safe, page }) });
   return list;
+}
+
+const TOPIC_KEYWORDS = ['boobs', 'tits', 'boobies', 'breasts', 'busty', 'cleavage', 'titties', 'big boobs'];
+function topicQuery(q = '', page = 1, offset = 0) {
+ return [TOPIC_KEYWORDS[(page - 1 + offset) % TOPIC_KEYWORDS.length], q.replace(/\b(boobs?|tits?|boobies|breasts?|busty|cleavage|titties|titty)\b/gi, '').trim()].join(' ').trim();
+}
+function isTopicItem(item) {
+ return /\b(boobs?|tits?|boobies|breasts?|busty|cleavage|titties|titty)\b/i.test([item.title, item.body, ...(item.tags || []), item.meme?.text, item.meme?.description].filter(Boolean).join(' '));
 }
 
 function sessionFor(p) {
   const key = JSON.stringify([p.q.toLowerCase(), p.sort, p.safe, state.settings.searchMode, p.tags, p.folder, p.tab === 'library', [...p.src].sort()]);
   let s = state.sessions.get(key);
   if (s && Date.now() - s.createdAt < 10 * 60000) return s;
-  s = createSession(p.q, { sort: p.sort, safe: p.safe }, adaptersFor(p.q, p, 1));
+  s = createSession(p.q.replace(/\b(boobs?|tits?|boobies|breasts?|busty|cleavage|titties|titty)\b/gi, "").trim(), { sort: p.sort, safe: p.safe }, adaptersFor(p.q, p, 1));
   s.createdAt = Date.now(); s.key = key;
   const ping = () => s.listeners.forEach((l) => l(s));
   if (p.q) {
@@ -377,7 +393,7 @@ function sessionFor(p) {
 function registerItems(session) { for (const it of session.items) state.itemsById.set(it.id, it); }
 
 function visibleItems(session, p) {
-  let items = session.items;
+  let items = session.items.filter(isTopicItem);
   if (p.tab === 'images') items = items.filter((i) => i.kind !== 'template' || p.q);
   else if (p.tab === 'gifs') items = items.filter((i) => i.kind === 'gif');
   else if (p.tab === 'templates') items = items.filter((i) => i.kind === 'template');
@@ -414,8 +430,8 @@ async function renderResults(app, isStale) {
       </div>
       ${appsMenu()}
     </header>
-    ${state.route.name === 'home' ? '<section class="flapverse-banner" aria-label="Flapverse banner"><img src="assets/brand/flapverse-banner-3x1.png?v=15" alt="Flapverse logo with Doge and Pepe characters" width="2172" height="724" fetchpriority="high"></section>' : ''}
-    <div class="feed-heading"><a class="feed-social" href="https://x.com/flapverse_fun" rel="noopener noreferrer">𝕏 @flapverse_fun</a><h2>${p.q ? 'Search results' : p.tab === 'library' ? 'Your collection' : 'Explore memes'}</h2><span>${p.q ? esc(p.q) : 'TRENDING + CLASSICS'}</span></div>
+    ${state.route.name === 'home' ? '<section class="sling-hero"><div class="sling-hero-top"><span>✦ WELCOME TO YOUR HAPPY PLACE</span><span>MEMES. MOOD. MAGIC.</span></div><div class="sling-art"><img src="assets/brand/sling-banner.png?v=24" alt="Seven anime heroines at a colorful seaside resort" fetchpriority="high"></div><div class="sling-intro"><div><span class="sling-eyebrow">THE INTERNET, WITH EXTRA PERSONALITY</span><h1>A little chaos.<br>A lot of <em>good vibes.</em></h1><p>Your next favorite meme lives here. Pick a source, find your mood, and dive in.</p></div><div class="sling-sticker"><span>♡</span>SCROLL.<br>SMILE.<br>REPEAT.<i>100% your vibe</i></div></div><nav class="sling-moods" aria-label="Meme moods"><a href="#/search?q=anime">✧ Anime energy</a><a href="#/search?q=reaction">♡ Reactions</a><a href="#/search?q=funny">✦ Just for laughs</a><a href="#/search?tab=gifs">↗ GIF mode</a></nav></section>' : ''}
+    <div class="feed-heading"><a class="feed-social" href="https://x.com/slingland_fun" target="_blank" rel="noopener noreferrer">𝕏 @slingland_fun</a><h2>${p.q ? 'Search results' : p.tab === 'library' ? 'Your collection' : 'Boobs & tits memes'}</h2><span>${p.q ? esc(p.q) : 'BOOBS · TITS · BOOBIES · BREASTS'}</span></div>
     <div class="results ${p.id ? 'with-panel' : ''}">
       <main class="results-main" id="results-body"></main>
       <aside class="side-panel" id="panel"></aside>
@@ -434,8 +450,8 @@ async function renderResults(app, isStale) {
 function toggleList(list, v) { const s = new Set(list); if (s.has(v)) s.delete(v); else s.add(v); return [...s].join(','); }
 
 function statusLine(session, p, items) {
-  const loading = Object.entries(session.status).filter(([k, v]) => !k.includes(':') && v === 'loading').map(([k]) => SOURCE_INFO[k]?.label || k);
-  const errors = Object.entries(session.status).filter(([k, v]) => !k.includes(':') && v === 'error').map(([k]) => SOURCE_INFO[k]?.label || k);
+  const loading = Object.entries(session.status).filter(([k, v]) => !k.includes(':') && v === 'loading').map(([k]) => SOURCE_INFO[k.replace(/_topic\d+$/, "")]?.label || k);
+  const errors = Object.entries(session.status).filter(([k, v]) => !k.includes(':') && v === 'error').map(([k]) => SOURCE_INFO[k.replace(/_topic\d+$/, "")]?.label || k);
   const secs = (session.elapsed / 1000).toFixed(2);
   let txt;
   if (!p.q) txt = session.done ? `${items.length} ${p.tab === 'library' ? 'memes in your collection' : 'trending memes right now'}` : 'Loading trending memes...';
@@ -452,12 +468,11 @@ function renderBody(root, session, p) {
   if (p.q && session.done && items.length < 3) parts.push(`<div id="correction"></div>`);
   if (p.tab === 'library' && p.sel) parts.push(bulkBar());
 
-  if (p.tab === 'all') parts.push(renderAll(session, p, items, shown));
-  else if (!items.length) parts.push(session.done ? emptyState(p, session) : skeletonGrid());
+  if (!items.length) parts.push(session.done ? emptyState(p, session) : skeletonGrid());
   else parts.push(imageGrid(shown, p));
 
   if (items.length > shown.length) parts.push(`<div class="more"><button class="gbtn" data-action="more">More results (${items.length - shown.length} more loaded)</button></div>`);
-  if (session.done && p.tab !== 'library' && p.tab !== 'templates' && session.page < 5 && adaptersFor(p.q, p, session.page + 1).length) parts.push(`<div class="more"><button class="gbtn" data-action="load-more">Load more memes from selected sources</button></div>`);
+  if (session.done && p.tab !== 'library' && p.tab !== 'templates' && session.page < 10 && adaptersFor(p.q, p, session.page + 1).length) parts.push(`<div class="more"><button class="gbtn" data-action="load-more">Load more memes from selected sources</button></div>`);
   root.innerHTML = parts.join('');
   if (p.q && session.done && items.length < 3 && state.settings.googleSuggest) {
     spellCorrection(p.q, { lang: lang() }).then((c) => {
@@ -475,7 +490,7 @@ function emptyState(p, session) {
   const noSources = !Object.keys(SOURCE_INFO).some(enabled);
   const st = session ? Object.entries(session.status).filter(([k]) => !k.includes(':')) : [];
   const allFailed = st.length > 0 && st.every(([, v]) => v === 'error' || v === 'skipped');
-  if (allFailed) return `<div class="empty">Flapverse could not reach any source.
+  if (allFailed) return `<div class="empty">slingland could not reach any source.
     <div style="margin-top:12px">The browser blocked or failed every request to the meme sources (lemmy.world, meme-api.com, api.imgflip.com, mastodon.social).
     This happens with strict content blockers, privacy modes or network filters. Allow those hosts or try another browser, then
     <a href="javascript:location.reload()">reload</a>.</div></div>`;
@@ -999,14 +1014,14 @@ async function renderSettings(app) {
 
       <h2 id="about">About</h2>
       <div class="card" style="line-height:1.6">
-        <p style="margin:0 0 8px"><b>Flapverse</b> is Google for memes: a meme-only search engine that runs entirely in your browser and is hosted as a static site.
+        <p style="margin:0 0 8px"><b>slingland</b> is Google for memes: a meme-only search engine that runs entirely in your browser and is hosted as a static site.
         It started as a rebuild of <a href="https://github.com/meme-search/meme-search" rel="noopener">Meme Search</a> (Apache-2.0), whose features live on under My memes.</p>
         <p id="how" style="margin:0 0 8px"><b>How Search works.</b> Your query goes in parallel to the meme communities on Lemmy (searched through lemmy.world and the communities' own instances),
         to hot posts of meme subreddits via meme-api.com, to the Imgflip template list and, with your own keys, to Tenor, Giphy and Imgur. Results are merged, de-duplicated and ranked
         by title match, upvotes and freshness. Suggestions and "Did you mean" come live from Google's suggest service. The knowledge panel is the matching Wikipedia article.
         My memes are searched locally with BM25 or sentence embeddings.</p>
-        <p id="privacy" style="margin:0"><b>Privacy.</b> No analytics, no accounts, no Flapverse server. Queries are sent to the sources above (and to Google's suggest endpoint if enabled).
-        Uploads stay in this browser. Source: <a href="https://github.com/justbuildsstuff/Flapverse" rel="noopener">github.com/justbuildsstuff/Flapverse</a>.</p>
+        <p id="privacy" style="margin:0"><b>Privacy.</b> No analytics, no accounts, no slingland server. Queries are sent to the sources above (and to Google's suggest endpoint if enabled).
+        Uploads stay in this browser. Source: <a href="https://github.com/harrysdev007/flapverse" rel="noopener">github.com/harrysdev007/flapverse</a>.</p>
       </div>
     </main>`;
   $('#sb', app).replaceWith(searchBox({ compact: true }));
@@ -1207,7 +1222,7 @@ async function render(force = false) {
   const app = $('#app');
   if (state.route.name !== 'search') state.limit = 0;
   const p = state.route.params;
-  document.title = state.route.name === 'search' && p.q ? `${p.q} - Flapverse` : 'Flapverse';
+  document.title = state.route.name === 'search' && p.q ? `${p.q} - slingland` : 'slingland';
   const prevScroll = window.scrollY;
   // only the open panel changed: patch instead of re-rendering the whole page
   if (!force && state.route.name === 'search' && prev.name === 'search' && $('#results-body') && sameExcept(prev.params, p, ['id'])) {
